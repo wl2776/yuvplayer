@@ -121,7 +121,7 @@ CyuvplayerDlg::CyuvplayerDlg(CWnd* pParent /*=NULL*/)
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 
 	y = u = v = rgba = misc = segment = NULL;
-	m_color = NV21;
+	m_color = YUVPLAYER_DEFAULT_COLOR;
 
 	fd = -1;
 	ratio = 1.0;
