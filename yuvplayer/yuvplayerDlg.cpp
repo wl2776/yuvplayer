@@ -1024,7 +1024,6 @@ BOOL CyuvplayerDlg::PreTranslateMessage(MSG* pMsg)
 				return TRUE;
 
 			case VK_RETURN:
-			case VK_ESCAPE:
 				return TRUE;
 
 			case VK_SPACE:
