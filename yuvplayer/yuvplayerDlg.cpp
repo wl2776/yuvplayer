@@ -327,7 +327,6 @@ void CyuvplayerDlg::Resize(int width, int height)
 
 void CyuvplayerDlg::OnOpen()
 {
-	// TODO: Add your command handler code here
 	CFileDialog	dlg(
 			TRUE, _T("YUV"), NULL,
 			OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT|OFN_ALLOWMULTISELECT, 
