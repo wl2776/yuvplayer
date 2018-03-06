@@ -60,3 +60,5 @@ if (USE_PCRE)
     add_definitions(-DSUPPORT_PCRE)
     target_link_libraries(yuvplayer ${SRC_DIR}/pcre.lib)
 endif()
+
+install(TARGETS yuvplayer DESTINATION ${CMAKE_INSTALL_PREFIX})
