@@ -42,8 +42,8 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 
-#define DEFAULT_WIDTH 352
-#define DEFAULT_HEIGHT 288
+#define DEFAULT_WIDTH 640
+#define DEFAULT_HEIGHT 480
 
 #define MARGIN 2
 #define MAX_PATH_LEN 1024
