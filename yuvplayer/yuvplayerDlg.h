@@ -32,6 +32,10 @@
 //
 
 #pragma once
+#include <vector>
+#include <string>
+#include <memory>
+
 #include "afxcmn.h"
 #include "afxwin.h"
 
@@ -76,7 +80,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 private:
-	wchar_t* filename;
+	std::wstring filename;
 
 	int fd; 
 
@@ -90,13 +94,13 @@ private:
 	int width, height;
 	int t_width, t_height;
 
-	unsigned char* y;
-	unsigned char* u;
-	unsigned char* v;
+	std::vector<unsigned char> y;
+	std::vector<unsigned char> u;
+	std::vector<unsigned char> v;
 	
-	unsigned char* rgba;
-	unsigned char* misc;
-	unsigned char* segment;
+	std::vector<unsigned char> rgba;
+	std::vector<unsigned char> misc;
+	std::vector<unsigned char> segment;
 
 	int segment_option;
 
@@ -128,7 +132,7 @@ private:
 	void rgb2yuv420();
 	void OnCmenuSaveYuv( color_format type );
 
-	COpenGLView* OpenGLView;
+	COpenGLView *OpenGLView;
 
 	BOOL started;
 	CMenu* menu;

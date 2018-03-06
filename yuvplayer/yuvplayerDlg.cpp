@@ -31,6 +31,8 @@
 // yuvplayerDlg.cpp : implementation file
 //
 
+#include <vld.h>
+
 #include "stdafx.h"
 #include "yuvplayer.h"
 #include "yuvplayerDlg.h"
@@ -120,7 +122,6 @@ CyuvplayerDlg::CyuvplayerDlg(CWnd* pParent /*=NULL*/)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 
-	y = u = v = rgba = misc = segment = NULL;
 	m_color = YUVPLAYER_DEFAULT_COLOR;
 
 	fd = -1;
@@ -131,8 +132,8 @@ CyuvplayerDlg::CyuvplayerDlg(CWnd* pParent /*=NULL*/)
 	count = cur = 0;
 	started = FALSE;
 
-	filename = new wchar_t[MAX_PATH_LEN];
-	wsprintf(filename, L"%s", L"YUV player");
+	filename.resize(MAX_PATH_LEN);
+	wsprintf(&filename[0], L"%s", L"YUV player");
 
 	OpenGLView = new COpenGLView;
 }
@@ -268,27 +269,18 @@ void CyuvplayerDlg::Resize(int width, int height)
 	for( t_width = 2  ; t_width  < width  ; t_width  *= 2 );
 	for( t_height = 2 ; t_height < height ; t_height *= 2 );
 
-	if( y != NULL ) delete y;
-	if( u != NULL ) delete u;
-	if( v != NULL ) delete v;
-
-	if( rgba != NULL ) delete rgba;
-	if( misc != NULL ) delete misc;
+	y.resize(width*height*2);
+	u.resize(width*height*2);
+	v.resize(width*height*2);
 	
-	if( segment != NULL) delete segment;
-
-	y = new unsigned char[width*height*2];
-	u = new unsigned char[width*height*2];
-	v = new unsigned char[width*height*2];
-	
-	rgba    = new unsigned char[t_width*t_height*4];
-	segment = new unsigned char[t_width*t_height*4];
+	rgba.resize(t_width*t_height*4);
+	segment.resize(t_width*t_height*4);
 	
 	// reset alpha value to 255
-	memset( rgba, 255, sizeof(unsigned char)*t_width*t_height*4 );
+	rgba.assign(sizeof(unsigned char)*t_width*t_height*4, 255);
 
 	// used for NV12, NV21, UYVY, RGB32, RGB24, RGB16
-	misc = new unsigned char[width*height*4];
+	misc.resize(width*height*4);
 	
 	UpdateParameter();
 	OpenGLView->SetParam( t_width, t_height, ratio);
@@ -649,38 +641,38 @@ void CyuvplayerDlg::LoadFrame(void)
 	_lseeki64( fd, (__int64)cur*(__int64)frame_size, SEEK_SET );
 
 	if( m_color == RGB32 )
-		_read( fd, misc, frame_size_y*4 );
+		_read( fd, &misc[0], frame_size_y*4 );
 
 	else if( m_color == RGB24 )
-		_read( fd, misc, frame_size_y*3 );
+		_read( fd, &misc[0], frame_size_y*3 );
 	
 	else if( m_color == RGB16 )
-		_read( fd, misc, frame_size_y*2 );
+		_read( fd, &misc[0], frame_size_y*2 );
 
 	else if( m_color == UYVY )
-		_read( fd, misc, frame_size_y*2 );
+		_read( fd, &misc[0], frame_size_y*2 );
 
 	else if( m_color == YUYV )
-		_read( fd, misc, frame_size_y*2 );
+		_read( fd, &misc[0], frame_size_y*2 );
 
 	else if( m_color == NV12 || m_color == NV21)
 	{
-		_read( fd, y,    frame_size_y );
-		_read( fd, misc, frame_size_y/2 );
+		_read( fd, &y[0],    frame_size_y );
+		_read( fd, &misc[0], frame_size_y/2 );
 	}
 
     else if ( m_color == PACKED_YUV444 )
-        _read( fd, misc, frame_size );
+        _read( fd, &misc[0], frame_size );
 
 	else
 	{
-		_read( fd, y, frame_size_y );
-		_read( fd, u, frame_size_uv );
-		_read( fd, v, frame_size_uv );
+		_read( fd, &y[0], frame_size_y );
+		_read( fd, &u[0], frame_size_uv );
+		_read( fd, &v[0], frame_size_uv );
 	}
 
 	yuv2rgb();
-	OpenGLView->LoadTexture(rgba);
+	OpenGLView->LoadTexture(&rgba[0]);
 
 	m_slider.SetPos(cur);
 	m_slider.UpdateData(FALSE);
@@ -697,7 +689,7 @@ void CyuvplayerDlg::yuv2rgb(void)
 
 	int r, g, b;
 	
-	unsigned char* line = rgba;
+	unsigned char* line = &rgba[0];
 	unsigned char* cur;
 
 	short* rgb16;
@@ -751,7 +743,7 @@ void CyuvplayerDlg::yuv2rgb(void)
 	}
 
 	else if( m_color == UYVY ){
-		unsigned char* t = misc;
+		unsigned char* t = &misc[0];
 		for( j = 0 ; j < height ; j++ ){
 			cur = line;
 			for( i = 0 ; i < width ; i+=2 ){
@@ -775,7 +767,7 @@ void CyuvplayerDlg::yuv2rgb(void)
 	}
 
 	else if( m_color == YUYV ){
-		unsigned char* t = misc;
+		unsigned char* t = &misc[0];
 		for( j = 0 ; j < height ; j++ ){
 			cur = line;
 			for( i = 0 ; i < width ; i+=2 ){
@@ -875,7 +867,7 @@ void CyuvplayerDlg::yuv2rgb(void)
 					b = misc[(j*width+i)*3+0];
 				}
 				else {
-					rgb16 = (short*)misc;
+					rgb16 = (short*)&misc[0];
 
 					r = ((rgb16[j*width+i] >> 11)&0x1F) << 3;
 					g = ((rgb16[j*width+i] >> 5 )&0x3F) << 2;
@@ -1099,13 +1091,6 @@ void CyuvplayerDlg::OnDestroy()
 	// TODO: Add your message handler code here
 	delete customDlg;
 
-	if( y != NULL ) delete y;
-	if( u != NULL ) delete u;
-	if( v != NULL ) delete v;
-	
-	if( rgba != NULL ) delete rgba;
-	if( misc != NULL ) delete misc;
-
 	if( fd > -1 ) _close(fd);
 }
 
@@ -1318,7 +1303,7 @@ void CyuvplayerDlg::OnCmenuSaveLuminance()
 	}
 	else {
 
-		_write( ofd, y, frame_size_y );
+		_write( ofd, &y[0], frame_size_y );
 		_close(ofd );
 
 	}
@@ -1378,18 +1363,18 @@ void CyuvplayerDlg::OnCmenuSaveYuv( color_format type )
 
 		}
 
-		_write( ofd, y, width*height );
+		_write( ofd, &y[0], width*height );
 		if( type == YUV444 ){
-			_write( ofd, u, width*height );
-			_write( ofd, v, width*height );
+			_write( ofd, &u[0], width*height );
+			_write( ofd, &v[0], width*height );
 		}
 		else if( type == YUV422 ){
-			_write( ofd, u, width*height/2 );
-			_write( ofd, v, width*height/2 );
+			_write( ofd, &u[0], width*height/2 );
+			_write( ofd, &v[0], width*height/2 );
 		}
 		else {
-			_write( ofd, u, width*height/4 );
-			_write( ofd, v, width*height/4 );
+			_write( ofd, &u[0], width*height/4 );
+			_write( ofd, &v[0], width*height/4 );
 		}
 		_close(ofd );
 
@@ -1411,7 +1396,7 @@ void CyuvplayerDlg::rgb2yuv444(){
 	unsigned char* pos;
 	unsigned char* line;
 	
-	line = rgba; idx = 0;
+	line = &rgba[0]; idx = 0;
 	for( j = 0 ; j < height ; j++ ){
 		pos = line;
 		for( i = 0 ; i < width ; i++ ){
@@ -1456,7 +1441,7 @@ void CyuvplayerDlg::rgb2yuv422(){
 	}
 	*/
 
-	idx = 0; line = rgba;
+	idx = 0; line = &rgba[0];
 	for( j = 0 ; j < height ; j++ ){
 		pos = line;
 		for( i = 0 ; i < width ; i+=2 ){
@@ -1511,7 +1496,7 @@ void CyuvplayerDlg::rgb2yuv420(){
 	}
 	*/
 
-	idx = 0; line = rgba;
+	idx = 0; line = &rgba[0];
 	for( j = 0 ; j < height ; j+=2 ){
 		pos = line;
 		for( i = 0 ; i < width ; i+=2 ){
@@ -1642,8 +1627,7 @@ void CyuvplayerDlg::UpdateFilename(wchar_t* path)
 	for( start = len-1 ; start >= 0 && path[start] != '\\' ; start-- ); start++;
 	for( end = start+1 ; end < len && path[end] != '.' ; end++ );
 
-	wcsncpy( filename, path+start, end-start );
-	filename[end-start] = 0;
+	filename.assign(path + start, end - start);
 }
 
 void CyuvplayerDlg::DrawSegment(void)
@@ -1651,7 +1635,7 @@ void CyuvplayerDlg::DrawSegment(void)
 	int i, j, k;
 
 	// erase segment texture
-	memset(segment, 0, t_width*t_height*4);
+	segment.assign(t_width*t_height * 4, 0);
 
 	if (segment_option & SEGMENT16x16)
 	{
@@ -1743,5 +1727,5 @@ void CyuvplayerDlg::DrawSegment(void)
 		}
 	}
 
-	OpenGLView->LoadSegmentTexture(segment);
+	OpenGLView->LoadSegmentTexture(&segment[0]);
 }
