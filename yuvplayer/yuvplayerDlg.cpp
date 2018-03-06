@@ -31,8 +31,6 @@
 // yuvplayerDlg.cpp : implementation file
 //
 
-#include <vld.h>
-
 #include "stdafx.h"
 #include "yuvplayer.h"
 #include "yuvplayerDlg.h"
