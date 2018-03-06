@@ -1073,6 +1073,11 @@ BOOL CyuvplayerDlg::PreTranslateMessage(MSG* pMsg)
 				OnSizeChange(ID_SIZE_QCIF);
 				return TRUE;
 
+			case 'v':
+			case 'V':
+				OnSizeChange(ID_SIZE_VGA);
+				return TRUE;
+
 			case 'g':
 			case 'G':
 				OnFileGo();
