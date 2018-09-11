@@ -1043,9 +1043,14 @@ BOOL CyuvplayerDlg::PreTranslateMessage(MSG* pMsg)
 				return TRUE;
 
 			case 's':
-			case 'S':
-				OnSizeChange(ID_SIZE_SD);
-				return TRUE;
+			case 'S': 
+				if (GetKeyState(VK_CONTROL) & 0x8000) { //Ctrl-S 
+					OnCmenuSaveRgb();
+				} else {
+					OnSizeChange(ID_SIZE_SD);
+				}
+
+				return TRUE; 
 
 			case 'c':
 			case 'C':
