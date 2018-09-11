@@ -1557,7 +1557,7 @@ void CyuvplayerDlg::OnCmenuSaveRgb()
 	if( started )
 		StopTimer();
 	
-	wsprintf( buf, L"%s_%d_rgb.bmp", filename, cur );
+	wsprintf( buf, L"%s_%d_rgb.bmp", filename.c_str(), cur );
 	CFileDialog	dlg(
 			TRUE, _T("BMP"), buf,
 			OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT,
