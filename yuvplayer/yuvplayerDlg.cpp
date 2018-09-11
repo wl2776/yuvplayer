@@ -66,6 +66,7 @@ typedef struct
 
 } size_info_t;
 
+
 #ifdef SUPPORT_PCRE
 static const size_info_t size_info[] = {
 	{ L"1080p", 1920, 1080, ID_SIZE_HD },
@@ -1186,6 +1187,7 @@ void CyuvplayerDlg::FileOpen( wchar_t* path )
 		pcre16_free(regex);
 	}
 #else
+	bool updated_menus = false;
 	for (i = 0; size_info[i].string != NULL; i++)
 	{
 		if (wcsstr(file, size_info[i].string) != NULL)
@@ -1200,12 +1202,32 @@ void CyuvplayerDlg::FileOpen( wchar_t* path )
 			// reallocate memory
 			Resize(size_info[i].width, size_info[i].height);
 
+			updated_menus = true;
+
 			break;
 		}
 	}
 #endif
 
 	UpdateParameter();
+
+	if (!updated_menus) {
+		for (int j = ID_SIZE_START; j <= ID_SIZE_END; j++) {
+			menu->CheckMenuItem(j, MF_UNCHECKED);
+		}
+
+		for (int j = ID_COLOR_START; j <= ID_COLOR_END; j++) {
+			menu->CheckMenuItem(j, MF_UNCHECKED);
+		}
+
+		for (int i = 0; size_info[i].string != NULL; ++i) {
+			if (size_info[i].width == width && size_info[i].height == height) {
+				menu->CheckMenuItem(size_info[i].size_id, MF_CHECKED);
+				break;
+			}
+		}
+	}
+
 	LoadFrame();
 }
 void CyuvplayerDlg::OnDropFiles(HDROP hDropInfo)
